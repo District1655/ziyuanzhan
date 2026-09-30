@@ -2,8 +2,8 @@ name: Monitor & Deploy
 
 on:
   schedule:
-    # 每6小时运行一次（UTC时间）
-    - cron: '0 */6 * * *'
+    # 每12小时运行一次（UTC时间）
+    - cron: '0 */12 * * *'
   workflow_dispatch:
   push:
     branches:
@@ -28,6 +28,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Sync upstream sources
+        run: |
+          curl -sL -o docs/data/sources.json https://raw.githubusercontent.com/mylazily/ziyuanzhan/main/docs/data/sources.json || echo "[WARN] 上游同步失败，使用本地/API 数据"
 
       - name: Set up Python
         uses: actions/setup-python@v5
