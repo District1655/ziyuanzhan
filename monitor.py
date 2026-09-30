@@ -6,6 +6,7 @@ ziyuanzu.com 资源站监测脚本
 2. 检测各资源站可用性（HTTP 状态码 + 响应时间）
 3. 生成静态 HTML 页面
 4. 保存 JSON 数据供历史对比
+5. 生成 LibreTV-SourceList 订阅格式（libretv-sources.json）
 """
 
 import json
@@ -178,7 +179,7 @@ def generate_html(data: dict, output_path: str):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>资源站监测 - www.ziyuanzu.com 资源站实时监控</title>
 <meta name="description" content="www.ziyuanzu.com 资源站实时监测面板，共监测{total}个资源站，在线{alive}个，离线{dead}个。更新时间：{now}">
-<meta name="keywords" content="资源组, ziyuanzu, 影视资源站, 采集站监测, 资源站监控, 播放源检测">
+<meta name="keywords" content="资源组, ziyuanzu, 影视资源站, 采集站监测, 播放源检测">
 <style>
   :root {{
     --bg: #0f172a; --surface: #1e293b; --surface2: #334155;
@@ -489,6 +490,22 @@ def main():
         "data": top_rated,
     }, "docs/data/top-rated.json")
 
+    # 生成 LibreTV-SourceList 订阅格式（只含在线且 api 有效的源）
+    libretv_sources = []
+    for r in resources:
+        api = (r.get("api") or "").strip()
+        name = (r.get("name") or "").strip()
+        is_alive = r.get("health", {}).get("is_alive", False)
+        if is_alive and api and (api.startswith("http://") or api.startswith("https://")):
+            libretv_sources.append({"name": name, "url": api})
+
+    save_json({
+        "name": "ziyuanzhan 在线资源站",
+        "version": 2,
+        "sources": libretv_sources,
+        "liveSources": [],
+    }, "docs/data/libretv-sources.json")
+
     print("\n[4/4] 完成！")
     print("=" * 50)
     print(f"监测完成: {len(resources)} 个资源站, {alive_count} 在线, {len(resources) - alive_count} 离线")
@@ -500,6 +517,7 @@ def main():
     print(f"  data/stats.json       - 统计数据")
     print(f"  data/fastest.json     - 最快资源站 (Top {len(fastest)})")
     print(f"  data/top-rated.json   - 高评分资源站 (Top {len(top_rated)})")
+    print(f"  data/libretv-sources.json - LibreTV 订阅源 ({len(libretv_sources)})")
     print("=" * 50)
 
 
