@@ -59,13 +59,23 @@ jobs:
           git diff --cached --quiet || git commit -m "📊 Update monitor data: $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
+      # 产物在本 job 内上传完成；部署交给下游 deploy job，
+      # 避免同一 job 内上传与部署紧挨着执行时，产物元数据尚未在服务端就绪导致 "No artifacts named github-pages"。
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
 
+  deploy:
+    needs: monitor
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
