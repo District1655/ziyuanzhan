@@ -27,14 +27,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Sync upstream sources
         run: |
           curl -sL -o docs/data/sources.json https://raw.githubusercontent.com/mylazily/ziyuanzhan/main/docs/data/sources.json || echo "[WARN] 上游同步失败，使用本地/API 数据"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
@@ -62,7 +62,7 @@ jobs:
       # 产物在本 job 内上传完成；部署交给下游 deploy job，
       # 避免同一 job 内上传与部署紧挨着执行时，产物元数据尚未在服务端就绪导致 "No artifacts named github-pages"。
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/
 
@@ -74,8 +74,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
